@@ -162,6 +162,7 @@ class mongodb:
             st.success('Database Collection uploaded')
             st.balloons()
             mongodb.droptemp_collection()
+
         #if mognodb is not empty it will check for some condition like if it's already their or not
         else:
 
@@ -551,6 +552,98 @@ class dataAnalysis:
         except Error as e:
             print("Error while connecting to MySQL", e)
 
+    #function to get total videos corresponding to their channel name
+    def totalVideos():
+        try:
+            myslq_engine = mysql.connector.connect(user='root', 
+                                        password='admin', 
+                                        host='localhost', 
+                                        port='3306', 
+                                        database = 'youtubedb')
+
+            crsr = myslq_engine.cursor()
+            
+            # SQL query to be executed in the database
+            sql_command = """select channel_table.channel_name as "Channel Name", channel_table.total_videos as "Total Videos"
+                            FROM channel_table
+                            order by channel_table.total_videos desc;
+                        """
+            
+            # execute the statement
+            crsr.execute(sql_command)
+            queryResult = crsr.fetchall()
+
+            #adding result to the dataframe
+            i = [i for i in range(1, len(queryResult)+1)]
+            df = pd.DataFrame(queryResult, columns=['Channel Name', 'Total Videos'], index=i)
+            df = df.rename_axis('S.No')
+            myslq_engine.close()
+            return df
+        
+        except Error as e:
+            print("Error while connecting to MySQL", e)
+
+    #function to get total subscribers corresponding to their channel name
+    def totalSubscribers():
+        try:
+            myslq_engine = mysql.connector.connect(user='root', 
+                                        password='admin', 
+                                        host='localhost', 
+                                        port='3306', 
+                                        database = 'youtubedb')
+
+            crsr = myslq_engine.cursor()
+            
+            # SQL query to be executed in the database
+            sql_command = """select channel_table.channel_name as "Channel Name", channel_table.subscriber_count as "Total Videos"
+                            FROM channel_table
+                            order by channel_table.subscriber_count desc;
+                        """
+            
+            # execute the statement
+            crsr.execute(sql_command)
+            queryResult = crsr.fetchall()
+
+            #adding result to the dataframe
+            i = [i for i in range(1, len(queryResult)+1)]
+            df = pd.DataFrame(queryResult, columns=['Channel Name', 'Total Subscribers'], index=i)
+            df = df.rename_axis('S.No')
+            myslq_engine.close()
+            return df
+        
+        except Error as e:
+            print("Error while connecting to MySQL", e)
+
+    def totalViews():
+        try:
+            myslq_engine = mysql.connector.connect(user='root', 
+                                        password='admin', 
+                                        host='localhost', 
+                                        port='3306', 
+                                        database = 'youtubedb')
+
+            crsr = myslq_engine.cursor()
+            
+            # SQL query to be executed in the database
+            sql_command = """select channel_table.channel_name as "Channel Name", channel_table.channel_views as "Total Videos"
+                            FROM channel_table
+                            order by channel_table.channel_views desc;
+                        """
+            
+            # execute the statement
+            crsr.execute(sql_command)
+            queryResult = crsr.fetchall()
+
+            #adding result to the dataframe
+            i = [i for i in range(1, len(queryResult)+1)]
+            df = pd.DataFrame(queryResult, columns=['Channel Name', 'Total Channel Views'], index=i)
+            df = df.rename_axis('S.No')
+            myslq_engine.close()
+            return df
+        
+        except Error as e:
+            print("Error while connecting to MySQL", e)
+
     def main():
         channel_list = dataAnalysis.list_channel_names()
         if channel_list == []:
@@ -579,13 +672,50 @@ class dataAnalysis:
                     st.dataframe(channelwise_playlists_df, width=500)
             col3, col4 = st.columns([1,2])
             with col3:
+                totalVideos_df = dataAnalysis.totalVideos()
+                st.subheader("Total Videos per Youtube Channels:")
+                st.dataframe(totalVideos_df, width=500)
+            with col4:
+                fig = px.bar(totalVideos_df, x='Total Videos', y='Channel Name', template='seaborn')
+                fig.update_traces(text=totalVideos_df['Total Videos'], textposition='outside')
+                colors = px.colors.qualitative.Plotly
+                fig.update_traces(marker=dict(color=colors[:len(totalVideos_df)]))
+                st.plotly_chart(fig, use_container_width=True)
+
+            col5, col6 = st.columns([1,2])
+            with col5:
                 totalPlaylists_df = dataAnalysis.totalPlaylists()
                 st.subheader("Total Playlists per Youtube Channels:")
                 st.dataframe(totalPlaylists_df, width=500)
-            with col4:
+            with col6:
                 fig = px.pie(totalPlaylists_df, names='Channel Name',
                          values='Total Playlists', hole=0.5)
                 fig.update_traces(text=totalPlaylists_df['Channel Name'], textinfo='percent+label',
+                                texttemplate='%{percent:.2%}', textposition='outside',
+                                textfont=dict(color='white'))
+                st.plotly_chart(fig, use_container_width=True)
+            
+            col7, col8 = st.columns([1,2])
+            with col7:
+                totalSubscribers_df = dataAnalysis.totalSubscribers()
+                st.subheader("Total subscribers per Youtube Channels:")
+                st.dataframe(totalSubscribers_df, width=500)
+            with col8:
+                fig = px.bar(totalSubscribers_df, x='Total Subscribers', y='Channel Name', template='seaborn')
+                fig.update_traces(text=totalSubscribers_df['Total Subscribers'], textposition='outside')
+                colors = px.colors.qualitative.Plotly
+                fig.update_traces(marker=dict(color=colors[:len(totalSubscribers_df)]))
+                st.plotly_chart(fig, use_container_width=True)
+            
+            col9, col10 = st.columns([1,2])
+            with col9:
+                totalViews_df = dataAnalysis.totalViews()
+                st.subheader("Total youtube channel views:")
+                st.dataframe(totalViews_df, width=500)
+            with col10:
+                fig = px.pie(totalViews_df, names='Channel Name',
+                         values='Total Channel Views', hole=0.5)
+                fig.update_traces(text=totalViews_df['Channel Name'], textinfo='percent+label',
                                 texttemplate='%{percent:.2%}', textposition='outside',
                                 textfont=dict(color='white'))
                 st.plotly_chart(fig, use_container_width=True)
@@ -657,8 +787,9 @@ class sqlQueries:
         crsr = myslq_engine.cursor()
         
         # SQL query to be executed in the database
-        sql_command = """select video_name as "Video Name", view_count as "View Count"
-                        from youtubedb.videos_table 
+        sql_command = """select video_name as "Video Name", channel_name as "Channel Name", view_count as "View Count"
+                        from videos_table
+                        left join channel_table On videos_table.channel_id = channel_table.channel_id
                         ORDER BY view_count desc
                         limit 10;
         """
@@ -669,7 +800,7 @@ class sqlQueries:
 
         #adding result to the dataframe
         i = [i for i in range(1, len(queryResult)+1)]
-        df = pd.DataFrame(queryResult, columns=['Video Name', 'View Count'], index=i)
+        df = pd.DataFrame(queryResult, columns=['Video Name','Channel Name', 'View Count'], index=i)
         df = df.rename_axis('S.No')
         myslq_engine.close()
         return df
@@ -753,7 +884,7 @@ class sqlQueries:
 
         #adding result to the dataframe
         i = [i for i in range(1, len(queryResult)+1)]
-        df = pd.DataFrame(queryResult, columns=['Channel Name', 'Comment Count'], index=i)
+        df = pd.DataFrame(queryResult, columns=['Video Name', 'Comment Count'], index=i)
         df = df.rename_axis('S.No')
         myslq_engine.close()
         return df
@@ -921,6 +1052,7 @@ class sqlQueries:
             st.dataframe(
                 sqlQueries.q10_mostcomments_videos(), width=1000)
 
+#declaring the left navigation adn all the options
 with st.sidebar:
     image_url = 'https://raw.githubusercontent.com/gopiashokan/Youtube-Data-Harvesting-and-Warehousing/main/youtube_banner.JPG'
     st.image(image_url, use_column_width=True)
@@ -953,7 +1085,7 @@ if leftnav_option == 'Retrieval/Migration of Data from YouTube API':
                 channel_name = data['channel_name']['channel_name']
 
                 # display the sample data in streamlit
-                #st.json(youtubeExtract.display_sample_data(enteredChannel_id))
+                st.json(youtubeExtract.display_sample_data(enteredChannel_id))
                 st.success(f'Retrived data from YouTube channel "{channel_name}" successfully')
                 st.balloons()
                 status = mongodb.tempMongodb(final_data)
@@ -971,7 +1103,6 @@ if leftnav_option == 'Retrieval/Migration of Data from YouTube API':
                 ["Yes", "No"], index=None)
             if overwrite_option == 'Yes':
                 mongodb.drop_collection(channel_id)
-                mongodb.droptemp_collection()
                 mongodb.toMongodb()
                 st.success('Data is overwritten')
                 st.balloons()

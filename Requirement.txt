@@ -1,8 +1,8 @@
 streamlit
+streamlit_option_menu
 pandas
 google-api-python-client
-seaborn
 pymongo
 sqlalchemy
-pymysql
 mysql-connector-python
+plotly
