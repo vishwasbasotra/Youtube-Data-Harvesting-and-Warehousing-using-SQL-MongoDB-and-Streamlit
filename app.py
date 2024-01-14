@@ -318,7 +318,7 @@ class mysqlData():
                   dtype={'channel_name':sa.types.VARCHAR(length=255),
                          'channel_id':sa.types.VARCHAR(length=255),
                          'subscriber_count':sa.types.INTEGER(),
-                         'channel_views':sa.types.INTEGER(),
+                         'channel_views':sa.types.BIGINT(),
                          'total_videos':sa.types.INTEGER(),
                          'channel_description':sa.types.TEXT(),
                          'upload_id':sa.types.VARCHAR(length=255)
@@ -955,11 +955,11 @@ class sqlQueries:
         crsr = myslq_engine.cursor()
         
         # SQL query to be executed in the database
-        sql_command = """select channel_table.channel_name as "Channel Name", cast(avg(duration)as time) as "AVG Video Time"
+        sql_command = """select channel_table.channel_name as "Channel Name", avg(duration)as "AVG Video Time"
         FROM videos_table
         left join channel_table on videos_table.channel_id = channel_table.channel_id
         group by channel_table.channel_name
-        order by  cast(avg(duration)as time) desc;
+        order by  avg(duration) desc;
         """
         
         # execute the statement
