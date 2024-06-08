@@ -31,7 +31,7 @@ YouTube Data Harvesting and Warehousing is a project aimed at developing a user-
 
 **Installation**
 
-Install the required packages: ```pip install -r requirements.txt```
+Install the required packages: ```pip install -r Requirements.txt```
 
 **Features**
 
